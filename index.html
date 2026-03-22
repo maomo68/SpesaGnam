@@ -10,8 +10,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="SpesaGnam">
     
-    <!-- ICONE PER IOS E ANDROID -->
-    <!-- Questa riga serve specificamente per iPhone/iPad -->
     <link rel="apple-touch-icon" href="icona.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,7 +22,7 @@
             theme: {
                 extend: {
                     colors: {
-                        mint: { 400: '#3ecc7d', 500: '#2ecc71', 600: '#23a85a' },
+                        mint: { 100: '#e1f9eb', 400: '#3ecc7d', 500: '#2ecc71', 600: '#23a85a' },
                         sunset: { 500: '#e67e22' }
                     }
                 }
@@ -33,7 +31,7 @@
     </script>
     
     <style>
-        body { font-family: 'Quicksand', sans-serif; background: #fefdfb; }
+        body { font-family: 'Quicksand', sans-serif; background: #fefdfb; overflow-x: hidden; }
         
         /* Stile Documento (Lista) */
         .list-document {
@@ -47,17 +45,17 @@
         .list-row {
             display: flex; align-items: center; padding: 12px 16px; gap: 12px;
             border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s;
         }
         .list-row:last-child { border-bottom: none; }
+        .list-row:focus-within { background-color: rgba(46, 204, 113, 0.03); }
         
         /* Classi stato */
         .item-completed .item-text { text-decoration: line-through; color: #9ca3af; }
+        .item-completed .item-qty { opacity: 0.5; }
         .item-completed { background-color: rgba(46, 204, 113, 0.03); }
         
         /* Animazioni */
-        .item-enter { animation: slideDown 0.3s ease-out; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        
         .item-exit { animation: slideOut 0.3s ease-out forwards; }
         @keyframes slideOut { to { opacity: 0; transform: translateX(20px); height: 0; padding: 0; border: 0; } }
         
@@ -67,8 +65,11 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
             transition: all 0.2s;
         }
-        .checkbox-custom:hover { border-color: #2ecc71; }
+        .checkbox-custom:hover, .checkbox-custom:focus { border-color: #2ecc71; outline: none; box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2); }
         .checkbox-custom.checked { background: #2ecc71; border-color: #2ecc71; }
+        
+        /* Delete Button */
+        .delete-btn:focus { outline: none; color: #ef4444; background-color: #fef2f2; }
         
         /* Mascot */
         .mascot-body { animation: bounce 3s infinite; }
@@ -92,51 +93,52 @@
 <body class="bg-gradient-to-br from-white to-green-50 min-h-screen">
     
     <div class="max-w-lg mx-auto px-4 py-4 min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="text-center mb-4">
-            <div class="inline-flex items-center gap-2 mb-1">
-                <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
-                    <path d="M8 16C8 13.79 9.79 12 12 12H36C38.21 12 40 13.79 40 16V40C40 42.21 38.21 44 36 44H12C9.79 44 8 42.21 8 40V16Z" fill="#2ecc71"/>
-                    <path d="M16 12V8C16 5.79 17.79 4 20 4H28C30.21 4 32 5.79 32 8V12" stroke="#27ae60" stroke-width="3" stroke-linecap="round"/>
-                    <circle cx="38" cy="20" r="6" fill="#fefdfb"/>
-                    <path d="M18 30C18 30 21 35 24 35C27 35 30 30 30 30" stroke="#1e8649" stroke-width="2.5" stroke-linecap="round"/>
-                    <ellipse cx="18" cy="26" rx="2" ry="2.5" fill="#1e8649"/>
-                    <ellipse cx="30" cy="26" rx="2" ry="2.5" fill="#1e8649"/>
-                </svg>
-                <h1 class="text-2xl font-extrabold tracking-tight">
-                    <span class="text-mint-600">Spesa</span><span class="text-sunset-500">Gnam</span>
-                </h1>
-            </div>
-        </header>
         
-        <!-- Input -->
-        <form id="addForm" class="relative mb-4">
-            <input 
-                type="text" id="itemInput"
-                placeholder="Aggiungi articolo..."
-                autocomplete="off"
-                class="w-full px-4 py-3 pr-12 text-base font-medium bg-white rounded-2xl border-2 border-gray-100 focus:border-mint-500 shadow-sm outline-none transition-all"
-            >
-            <button type="submit" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-mint-400 to-mint-600 text-white rounded-xl flex items-center justify-center shadow btn-press">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            </button>
-        </form>
+        <div class="sticky top-0 bg-gradient-to-b from-white via-white to-transparent z-40 pb-2">
+            <header class="text-center mb-4">
+                <div class="inline-flex items-center gap-2 mb-1">
+                    <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
+                        <path d="M8 16C8 13.79 9.79 12 12 12H36C38.21 12 40 13.79 40 16V40C40 42.21 38.21 44 36 44H12C9.79 44 8 42.21 8 40V16Z" fill="#2ecc71"/>
+                        <path d="M16 12V8C16 5.79 17.79 4 20 4H28C30.21 4 32 5.79 32 8V12" stroke="#27ae60" stroke-width="3" stroke-linecap="round"/>
+                        <circle cx="38" cy="20" r="6" fill="#fefdfb"/>
+                        <path d="M18 30C18 30 21 35 24 35C27 35 30 30 30 30" stroke="#1e8649" stroke-width="2.5" stroke-linecap="round"/>
+                        <ellipse cx="18" cy="26" rx="2" ry="2.5" fill="#1e8649"/>
+                        <ellipse cx="30" cy="26" rx="2" ry="2.5" fill="#1e8649"/>
+                    </svg>
+                    <h1 class="text-2xl font-extrabold tracking-tight">
+                        <span class="text-mint-600">Spesa</span><span class="text-sunset-500">Gnam</span>
+                    </h1>
+                </div>
+            </header>
+            
+            <form id="addForm" class="relative">
+                <input 
+                    type="text" id="itemInput"
+                    placeholder="Esempio: 2 Latte, 1kg Farina..."
+                    autocomplete="off"
+                    class="w-full px-4 py-3 pr-12 text-base font-medium bg-white rounded-2xl border-2 border-gray-100 focus:border-mint-500 shadow-sm outline-none transition-all"
+                >
+                <button type="submit" class="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-mint-400 to-mint-600 text-white rounded-xl flex items-center justify-center shadow btn-press">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+            </form>
+        </div>
         
-        <!-- Stats -->
-        <div id="statsBar" class="flex items-center justify-between mb-2 px-1 text-xs text-gray-400" style="display: none;">
+        <div id="statsBar" class="flex items-center justify-between mt-2 mb-2 px-1 text-xs text-gray-400" style="display: none;">
             <div class="flex items-center gap-2">
                 <span id="activeCount">0 attivi</span>
                 <span>•</span>
                 <span id="completedCount">0 completati</span>
             </div>
-            <button id="clearCompleted" class="font-semibold text-sunset-500 hover:text-red-500 btn-press" style="display:none;">Pulisci</button>
+            <div class="flex gap-2">
+                <button id="shareList" class="font-semibold text-mint-600 btn-press">Condividi</button>
+                <button id="clearCompleted" class="font-semibold text-sunset-500 hover:text-red-500 btn-press" style="display:none;">Pulisci</button>
+            </div>
         </div>
         
-        <!-- Lista -->
         <div id="itemsList" class="flex-1 list-document" style="display: none;"></div>
         
-        <!-- Empty State -->
-        <div id="emptyState" class="flex-1 flex flex-col items-center justify-center py-8">
+        <div id="emptyState" class="flex-1 flex flex-col items-center justify-center py-12">
             <div class="mascot-body mb-4">
                 <svg width="80" height="80" viewBox="0 0 140 140" fill="none" class="drop-shadow-xl">
                     <path d="M25 50C25 44.48 29.48 40 35 40H105C110.52 40 115 44.48 115 50V115C115 120.52 110.52 125 105 125H35C29.48 125 25 120.52 25 115V50Z" fill="#2ecc71"/>
@@ -152,7 +154,7 @@
                 </svg>
             </div>
             <h2 class="text-lg font-bold text-gray-700 mb-1 text-center">La lista è vuota!</h2>
-            <p class="text-gray-400 font-medium text-sm text-center">Cosa mangiamo di buono?</p>
+            <p class="text-gray-400 font-medium text-sm text-center">Aggiungi qualcosa all'elenco</p>
         </div>
     </div>
     
@@ -167,6 +169,7 @@
         function $(id) { return document.getElementById(id); }
         
         function escapeHTML(str) {
+            if (!str) return '';
             return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
@@ -197,8 +200,7 @@
             
             if(all.length > 0) {
                 stats.style.display = 'flex';
-                if(done.length > 0) clearBtn.style.display = 'block';
-                else clearBtn.style.display = 'none';
+                clearBtn.style.display = done.length > 0 ? 'block' : 'none';
             } else {
                 stats.style.display = 'none';
             }
@@ -216,11 +218,14 @@
                 all.forEach(item => {
                     html += `
                         <div class="list-row ${item.completed ? 'item-completed' : ''}" data-id="${item.id}">
-                            <div class="checkbox-custom ${item.completed ? 'checked' : ''}">
+                            <div class="checkbox-custom ${item.completed ? 'checked' : ''}" role="checkbox" aria-checked="${item.completed}" tabindex="0" title="Segna come completato">
                                 ${item.completed ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
                             </div>
-                            <span class="item-text flex-1 font-semibold text-gray-700 text-base">${escapeHTML(item.text)}</span>
-                            <div class="delete-btn w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 cursor-pointer opacity-50 hover:opacity-100">
+                            <div class="flex flex-1 items-center gap-2">
+                                ${item.qty ? `<span class="item-qty bg-mint-100 text-mint-600 px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">${escapeHTML(item.qty)}</span>` : ''}
+                                <span class="item-text font-semibold text-gray-700 text-base">${escapeHTML(item.name)}</span>
+                            </div>
+                            <div class="delete-btn w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 cursor-pointer opacity-50 hover:opacity-100" tabindex="0" role="button" title="Elimina articolo">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
                             </div>
                         </div>
@@ -231,11 +236,25 @@
         }
 
         // AZIONI
-        function addItem(text) {
-            if(!text) return;
+        function addItem(inputText) {
+            if(!inputText) return;
+
+            // Regex avanzata per parsing quantità intelligente (supporta numeri decimali con , o . e unità opzionali)
+            const qtyRegex = /^(\d+(?:[.,]\d+)?\s*(?:kg|g|l|ml|x|pezzi)?)\s+(.*)/i;
+            const match = inputText.match(qtyRegex);
+
+            let qty = null;
+            let name = inputText;
+
+            if(match) {
+                qty = match[1];
+                name = match[2];
+            }
+            
             items.unshift({
                 id: Date.now().toString(36),
-                text: text,
+                name: name,
+                qty: qty,
                 completed: false,
                 createdAt: Date.now()
             });
@@ -263,6 +282,19 @@
                 render();
             }, 300);
         }
+
+        function shareWhatsApp() {
+            const active = items.filter(i => !i.completed);
+            if(active.length === 0) { alert('Niente da condividere!'); return; }
+            
+            let text = "📝 *Lista Spesa SpesaGnam:* \n\n";
+            active.forEach(item => {
+                text += `• ${item.qty ? `*${item.qty}* ` : ''}${item.name}\n`;
+            });
+            
+            const url = `whatsapp://send?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
         
         function burst(x, y) {
             for(let i=0; i<6; i++) {
@@ -281,14 +313,14 @@
             }
         }
 
-        // EVENTI (Inizializzazione sicura)
+        // EVENTI
         document.addEventListener('DOMContentLoaded', function() {
             load();
             render();
             
             // Form Submit
             $('addForm').addEventListener('submit', function(e) {
-                e.preventDefault(); // FERMA IL RICARICAMENTO
+                e.preventDefault(); 
                 let input = $('itemInput');
                 addItem(input.value.trim());
                 input.value = '';
@@ -313,6 +345,25 @@
                     deleteItem(id);
                 }
             });
+
+            // Gestione Tastiera (Accessibilità)
+            $('itemsList').addEventListener('keydown', function(e) {
+                const target = e.target;
+                if (e.key !== 'Enter' && e.key !== ' ') return; // Ascolta solo invio o spazio
+
+                const row = target.closest('.list-row');
+                if(!row) return;
+                const id = row.dataset.id;
+                e.preventDefault(); // Previene lo scroll con lo spazio
+
+                if(target.classList.contains('checkbox-custom')) {
+                    const rect = target.getBoundingClientRect();
+                    burst(rect.left + rect.width/2, rect.top + rect.height/2);
+                    toggleItem(id);
+                } else if(target.classList.contains('delete-btn')) {
+                    deleteItem(id);
+                }
+            });
             
             // Clear Completed
             $('clearCompleted').addEventListener('click', function() {
@@ -324,10 +375,12 @@
                     render();
                 }, rows.length*50 + 300);
             });
+
+            // Condividi
+            $('shareList').addEventListener('click', shareWhatsApp);
         });
     </script>
 
-    <!-- MANIFEST: Puntamento al file icona.png -->
     <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22SpesaGnam%22%2C%22short_name%22%3A%22SpesaGnam%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23fefdfb%22%2C%22theme_color%22%3A%22%232ecc71%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22icona.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
 </body>
 </html>
