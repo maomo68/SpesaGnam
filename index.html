@@ -1,0 +1,712 @@
+
+```html
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpesaGnam - La tua lista della spesa</title>
+    
+    <!-- PWA Meta -->
+    <meta name="theme-color" content="#2ecc71">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SpesaGnam">
+    <meta name="description" content="La tua lista della spesa divertente e minimalista">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        mint: {
+                            50: '#edfcf3',
+                            100: '#d4f7e4',
+                            200: '#a7eec9',
+                            300: '#6de0a5',
+                            400: '#3ecc7d',
+                            500: '#2ecc71',
+                            600: '#23a85a',
+                            700: '#1e8649',
+                            800: '#1d6c3e',
+                            900: '#1c5935',
+                        },
+                        sunset: {
+                            50: '#fef6ed',
+                            100: '#fceace',
+                            200: '#fad4a3',
+                            300: '#f6b56e',
+                            400: '#f18f32',
+                            500: '#e67e22',
+                            600: '#c9621a',
+                            700: '#a54a16',
+                            800: '#883d18',
+                            900: '#713517',
+                        },
+                        cream: '#fefdfb',
+                    },
+                    fontFamily: {
+                        'quicksand': ['Quicksand', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
+                        '5xl': '2.5rem',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        :root {
+            --bg: #fefdfb;
+            --fg: #1a1a1a;
+            --muted: #9ca3af;
+            --accent: #2ecc71;
+            --accent-alt: #e67e22;
+            --card: #ffffff;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg);
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+        
+        /* Background Pattern */
+        .bg-pattern {
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(46, 204, 113, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(230, 126, 34, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(46, 204, 113, 0.03) 0%, transparent 80%);
+        }
+        
+        /* Floating Food Background */
+        .floating-food {
+            position: fixed;
+            font-size: 2rem;
+            opacity: 0.06;
+            pointer-events: none;
+            animation: floatFood 20s ease-in-out infinite;
+            z-index: 0;
+        }
+        
+        @keyframes floatFood {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(5deg); }
+            50% { transform: translateY(0) rotate(0deg); }
+            75% { transform: translateY(20px) rotate(-5deg); }
+        }
+        
+        /* Input Glow */
+        .input-glow:focus {
+            box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.2);
+        }
+        
+        /* Item Animations */
+        .item-enter {
+            animation: itemEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes itemEnter {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .item-exit {
+            animation: itemExit 0.3s ease-out forwards;
+        }
+        
+        @keyframes itemExit {
+            to {
+                opacity: 0;
+                transform: translateX(100px) scale(0.8);
+            }
+        }
+        
+        /* Gnam Pop Effect */
+        .gnam-pop {
+            animation: gnamPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes gnamPop {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.08); }
+            60% { transform: scale(0.98); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Emoji Burst */
+        .emoji-burst {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: emojiBurst 0.8s ease-out forwards;
+            z-index: 100;
+        }
+        
+        @keyframes emojiBurst {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(var(--rot));
+            }
+        }
+        
+        /* Completed Item */
+        .item-completed {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(46, 204, 113, 0.05)) !important;
+        }
+        
+        .item-completed .item-text {
+            text-decoration: line-through;
+            color: var(--muted);
+        }
+        
+        /* Smooth Reorder */
+        .list-item {
+            transition: all 0.3s ease;
+        }
+        
+        /* Checkbox Custom */
+        .checkbox-custom {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 3px solid #d1d5db;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: transparent;
+        }
+        
+        .checkbox-custom:hover {
+            border-color: var(--accent);
+            transform: scale(1.1);
+        }
+        
+        .checkbox-custom.checked {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border-color: transparent;
+            animation: checkBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        @keyframes checkBounce {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Mascot Animation */
+        .mascot-body {
+            animation: mascotBounce 3s ease-in-out infinite;
+        }
+        
+        @keyframes mascotBounce {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+        
+        .mascot-blink {
+            animation: blink 4s ease-in-out infinite;
+        }
+        
+        @keyframes blink {
+            0%, 45%, 55%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        
+        /* Button Press */
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+        
+        /* Stagger Animation */
+        .stagger-item {
+            animation: staggerIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+        
+        @keyframes staggerIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(46, 204, 113, 0.3);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(46, 204, 113, 0.5);
+        }
+        
+        /* Focus States */
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen font-quicksand">
+    <!-- Floating Background Foods -->
+    <div class="floating-food" style="top: 10%; left: 5%; animation-delay: 0s;">🍎</div>
+    <div class="floating-food" style="top: 20%; right: 8%; animation-delay: -5s;">🍕</div>
+    <div class="floating-food" style="top: 60%; left: 3%; animation-delay: -10s;">🥕</div>
+    <div class="floating-food" style="top: 70%; right: 5%; animation-delay: -15s;">🧀</div>
+    <div class="floating-food" style="top: 40%; right: 3%; animation-delay: -7s;">🍞</div>
+    <div class="floating-food" style="bottom: 15%; left: 8%; animation-delay: -12s;">🍇</div>
+    
+    <!-- App Container -->
+    <div class="relative z-10 max-w-lg mx-auto px-4 py-6 min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="text-center mb-6 stagger-item" style="animation-delay: 0.1s;">
+            <div class="inline-flex items-center gap-3 mb-2">
+                <!-- Logo SVG -->
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" class="drop-shadow-lg">
+                    <path d="M8 16C8 13.7909 9.79086 12 12 12H36C38.2091 12 40 13.7909 40 16V40C40 42.2091 38.2091 44 36 44H12C9.79086 44 8 42.2091 8 40V16Z" fill="url(#bagGradient)"/>
+                    <path d="M16 12V8C16 5.79086 17.7909 4 20 4H28C30.2091 4 32 5.79086 32 8V12" stroke="#27ae60" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="38" cy="20" r="6" fill="#fefdfb"/>
+                    <circle cx="38" cy="20" r="5" fill="#fefdfb"/>
+                    <path d="M18 30C18 30 21 35 24 35C27 35 30 30 30 30" stroke="#1e8649" stroke-width="2.5" stroke-linecap="round"/>
+                    <ellipse cx="18" cy="26" rx="2" ry="2.5" fill="#1e8649"/>
+                    <ellipse cx="30" cy="26" rx="2" ry="2.5" fill="#1e8649"/>
+                    <defs>
+                        <linearGradient id="bagGradient" x1="8" y1="12" x2="40" y2="44" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#3ecc7d"/>
+                            <stop offset="1" stop-color="#23a85a"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1 class="text-3xl font-extrabold tracking-tight">
+                    <span class="text-mint-600">Spesa</span><span class="text-sunset-500">Gnam</span>
+                </h1>
+            </div>
+            <p class="text-gray-500 text-sm font-medium">La tua lista della spesa divertente</p>
+        </header>
+        
+        <!-- Input Section -->
+        <div class="mb-6 stagger-item" style="animation-delay: 0.2s;">
+            <form id="addForm" class="relative">
+                <input 
+                    type="text" 
+                    id="itemInput"
+                    placeholder="Cosa compriamo oggi?"
+                    autocomplete="off"
+                    class="w-full px-5 py-4 pr-14 text-lg font-medium bg-white rounded-4xl border-2 border-gray-100 focus:border-mint-400 input-glow transition-all duration-300 shadow-sm placeholder:text-gray-300"
+                    aria-label="Aggiungi articolo"
+                >
+                <button 
+                    type="submit"
+                    id="addBtn"
+                    aria-label="Aggiungi"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 bg-gradient-to-br from-mint-400 to-mint-600 hover:from-mint-500 hover:to-mint-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 btn-press hover:shadow-xl"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+        
+        <!-- List Container -->
+        <div class="flex-1 flex flex-col stagger-item" style="animation-delay: 0.3s;">
+            <!-- Stats Bar -->
+            <div id="statsBar" class="flex items-center justify-between mb-4 px-2 opacity-0 transition-opacity duration-300">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-gray-400" id="activeCount">0 attivi</span>
+                    <span class="text-gray-300">•</span>
+                    <span class="text-sm font-medium text-gray-400" id="completedCount">0 completati</span>
+                </div>
+                <button 
+                    id="clearCompleted"
+                    class="text-sm font-semibold text-sunset-500 hover:text-sunset-600 transition-colors btn-press hidden"
+                    aria-label="Rimuovi completati"
+                >
+                    Pulisci
+                </button>
+            </div>
+            
+            <!-- Items List -->
+            <div id="itemsList" class="flex-1 space-y-3 overflow-y-auto pb-4" role="list" aria-label="Lista della spesa">
+                <!-- Items will be rendered here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyState" class="flex-1 flex flex-col items-center justify-center py-12">
+                <!-- Mascot SVG -->
+                <div class="mascot-body mb-6">
+                    <svg width="140" height="140" viewBox="0 0 140 140" fill="none" class="drop-shadow-xl">
+                        <path d="M25 50C25 44.4772 29.4772 40 35 40H105C110.523 40 115 44.4772 115 50V115C115 120.523 110.523 125 105 125H35C29.4772 125 25 120.523 25 115V50Z" fill="url(#mascotBag)"/>
+                        <path d="M45 40V30C45 22.268 51.268 16 59 16H81C88.732 16 95 22.268 95 30V40" stroke="#27ae60" stroke-width="6" stroke-linecap="round"/>
+                        <circle cx="110" cy="58" r="15" fill="#fefdfb"/>
+                        <g class="mascot-blink">
+                            <ellipse cx="55" cy="72" rx="6" ry="8" fill="#1e8649"/>
+                            <ellipse cx="85" cy="72" rx="6" ry="8" fill="#1e8649"/>
+                            <ellipse cx="57" cy="70" rx="2" ry="3" fill="white"/>
+                            <ellipse cx="87" cy="70" rx="2" ry="3" fill="white"/>
+                        </g>
+                        <ellipse cx="42" cy="85" rx="8" ry="5" fill="rgba(230, 126, 34, 0.3)"/>
+                        <ellipse cx="98" cy="85" rx="8" ry="5" fill="rgba(230, 126, 34, 0.3)"/>
+                        <path d="M52 95C52 95 62 108 70 108C78 108 88 95 88 95" stroke="#1e8649" stroke-width="4" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="mascotBag" x1="25" y1="40" x2="115" y2="125" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#3ecc7d"/>
+                                <stop offset="1" stop-color="#23a85a"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-700 mb-2 text-center">La lista e vuota!</h2>
+                <p class="text-gray-400 font-medium text-center">Cosa mangiamo di buono?</p>
+                <div class="mt-4 flex gap-2 text-2xl">
+                    <span class="animate-bounce" style="animation-delay: 0s;">🍎</span>
+                    <span class="animate-bounce" style="animation-delay: 0.1s;">🍕</span>
+                    <span class="animate-bounce" style="animation-delay: 0.2s;">🥗</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="text-center pt-4 text-xs text-gray-300 font-medium">
+            Tocca per completare • Scivola per riordinare
+        </footer>
+    </div>
+    
+    <!-- Emoji Burst Container -->
+    <div id="emojiContainer" class="fixed inset-0 pointer-events-none z-50"></div>
+
+    <script>
+        // ==================== CONFIG ====================
+        const STORAGE_KEY = 'spesagnam_items';
+        const foodEmojis = ['🍎', '🍕', '🧀', '🥕', '🍞', '🍇', '🍊', '🥦', '🍗', '🥛', '🍫', '🍌', '🥑', '🍅', '🥚'];
+        
+        // ==================== STATE ====================
+        let items = [];
+        
+        // ==================== DOM ELEMENTS ====================
+        let addForm, itemInput, itemsList, emptyState, statsBar, activeCount, completedCount, clearCompletedBtn, emojiContainer;
+        
+        // ==================== STORAGE ====================
+        function loadItems() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                items = stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                console.warn('Errore caricamento items:', e);
+                items = [];
+            }
+        }
+        
+        function saveItems() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+            } catch (e) {
+                console.warn('Errore salvataggio items:', e);
+            }
+        }
+        
+        // ==================== RENDERING ====================
+        function getSortedItems() {
+            const active = items.filter(i => !i.completed).sort((a, b) => b.createdAt - a.createdAt);
+            const completed = items.filter(i => i.completed).sort((a, b) => b.completedAt - a.completedAt);
+            return [...active, ...completed];
+        }
+        
+        function updateStats() {
+            const active = items.filter(i => !i.completed).length;
+            const completed = items.filter(i => i.completed).length;
+            
+            activeCount.textContent = `${active} attiv${active === 1 ? 'o' : 'i'}`;
+            completedCount.textContent = `${completed} completat${completed === 1 ? 'o' : 'i'}`;
+            
+            statsBar.style.opacity = items.length > 0 ? '1' : '0';
+            
+            if (completed > 0) {
+                clearCompletedBtn.classList.remove('hidden');
+            } else {
+                clearCompletedBtn.classList.add('hidden');
+            }
+        }
+        
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function createItemElement(item, withAnimation = false) {
+            const div = document.createElement('div');
+            div.className = `list-item bg-white rounded-3xl p-4 shadow-sm border border-gray-50 flex items-center gap-4 ${item.completed ? 'item-completed' : ''} ${withAnimation ? 'item-enter' : ''}`;
+            div.dataset.id = item.id;
+            div.setAttribute('role', 'listitem');
+            
+            div.innerHTML = `
+                <button 
+                    class="checkbox-custom ${item.completed ? 'checked' : ''}" 
+                    aria-label="${item.completed ? 'Segna come non completato' : 'Segna come completato'}"
+                >
+                    ${item.completed ? `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    ` : ''}
+                </button>
+                <span class="item-text flex-1 font-semibold text-gray-700 text-lg truncate">${escapeHTML(item.text)}</span>
+                <button 
+                    class="delete-btn w-8 h-8 rounded-full hover:bg-red-50 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors btn-press"
+                    aria-label="Elimina ${escapeHTML(item.text)}"
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            `;
+            
+            // Event listeners
+            const checkbox = div.querySelector('.checkbox-custom');
+            checkbox.addEventListener('click', () => toggleItem(item.id));
+            
+            const deleteBtn = div.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => deleteItem(item.id));
+            
+            return div;
+        }
+        
+        function renderList(animate = false) {
+            const sorted = getSortedItems();
+            
+            itemsList.innerHTML = '';
+            
+            if (sorted.length === 0) {
+                emptyState.style.display = 'flex';
+            } else {
+                emptyState.style.display = 'none';
+                sorted.forEach((item, index) => {
+                    const el = createItemElement(item, animate);
+                    if (animate) {
+                        el.style.animationDelay = `${index * 0.05}s`;
+                    }
+                    itemsList.appendChild(el);
+                });
+            }
+            
+            updateStats();
+        }
+        
+        // ==================== ACTIONS ====================
+        function addItem(text) {
+            const trimmed = text.trim();
+            if (!trimmed) return;
+            
+            const newItem = {
+                id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+                text: trimmed,
+                completed: false,
+                createdAt: Date.now()
+            };
+            
+            items.unshift(newItem);
+            saveItems();
+            
+            // Hide empty state
+            emptyState.style.display = 'none';
+            
+            // Create and insert element with animation
+            const el = createItemElement(newItem, true);
+            
+            // Insert at top (before first completed item if any)
+            const firstCompleted = itemsList.querySelector('.item-completed');
+            if (firstCompleted) {
+                itemsList.insertBefore(el, firstCompleted);
+            } else {
+                itemsList.insertBefore(el, itemsList.firstChild);
+            }
+            
+            updateStats();
+        }
+        
+        function toggleItem(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            
+            const wasCompleted = item.completed;
+            item.completed = !wasCompleted;
+            
+            if (!wasCompleted) {
+                // Completing - add timestamp and trigger effects
+                item.completedAt = Date.now();
+                
+                // Find the element and get position for emoji burst
+                const itemEl = itemsList.querySelector(`[data-id="${id}"]`);
+                if (itemEl) {
+                    const rect = itemEl.getBoundingClientRect();
+                    triggerEmojiBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                    itemEl.classList.add('gnam-pop');
+                }
+            }
+            
+            saveItems();
+            
+            // Re-render after animation
+            setTimeout(() => {
+                renderList();
+            }, 350);
+        }
+        
+        function deleteItem(id) {
+            const itemEl = itemsList.querySelector(`[data-id="${id}"]`);
+            
+            if (itemEl) {
+                itemEl.classList.add('item-exit');
+                setTimeout(() => {
+                    items = items.filter(i => i.id !== id);
+                    saveItems();
+                    renderList();
+                }, 300);
+            } else {
+                items = items.filter(i => i.id !== id);
+                saveItems();
+                renderList();
+            }
+        }
+        
+        function clearCompletedItems() {
+            const completedEls = itemsList.querySelectorAll('.item-completed');
+            
+            completedEls.forEach((el, i) => {
+                setTimeout(() => {
+                    el.classList.add('item-exit');
+                }, i * 50);
+            });
+            
+            setTimeout(() => {
+                items = items.filter(i => !i.completed);
+                saveItems();
+                renderList();
+            }, completedEls.length * 50 + 300);
+        }
+        
+        // ==================== EMOJI BURST ====================
+        function triggerEmojiBurst(x, y) {
+            const count = 5 + Math.floor(Math.random() * 4);
+            
+            for (let i = 0; i < count; i++) {
+                const emoji = document.createElement('span');
+                emoji.className = 'emoji-burst';
+                emoji.textContent = foodEmojis[Math.floor(Math.random() * foodEmojis.length)];
+                
+                const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+                const distance = 60 + Math.random() * 80;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance - 30;
+                const rot = (Math.random() - 0.5) * 360;
+                
+                emoji.style.left = x + 'px';
+                emoji.style.top = y + 'px';
+                emoji.style.setProperty('--tx', tx + 'px');
+                emoji.style.setProperty('--ty', ty + 'px');
+                emoji.style.setProperty('--rot', rot + 'deg');
+                
+                emojiContainer.appendChild(emoji);
+                
+                setTimeout(() => emoji.remove(), 1000);
+            }
+        }
+        
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize DOM references
+            addForm = document.getElementById('addForm');
+            itemInput = document.getElementById('itemInput');
+            itemsList = document.getElementById('itemsList');
+            emptyState = document.getElementById('emptyState');
+            statsBar = document.getElementById('statsBar');
+            activeCount = document.getElementById('activeCount');
+            completedCount = document.getElementById('completedCount');
+            clearCompletedBtn = document.getElementById('clearCompleted');
+            emojiContainer = document.getElementById('emojiContainer');
+            
+            // Load data
+            loadItems();
+            
+            // Initial render
+            renderList(true);
+            
+            // Event: Add item
+            addForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                addItem(itemInput.value);
+                itemInput.value = '';
+                itemInput.focus();
+            });
+            
+            // Event: Clear completed
+            clearCompletedBtn.addEventListener('click', clearCompletedItems);
+            
+            // Focus input after load
+            setTimeout(() => itemInput.focus(), 600);
+        });
+    </script>
+    
+    <!-- Manifest inline -->
+    <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22SpesaGnam%22%2C%22short_name%22%3A%22SpesaGnam%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23fefdfb%22%2C%22theme_color%22%3A%22%232ecc71%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520width%3D%27512%27%2520height%3D%27512%27%2520viewBox%3D%270%25200%2520512%2520512%27%2520fill%3D%27none%27%2520xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%253E%253Crect%2520width%3D%27512%27%2520height%3D%27512%27%2520rx%3D%27108%27%2520fill%3D%27%25232ecc71%27%2F%253E%253Cpath%2520d%3D%27M100%2520180C100%2520147%2520127%2520120%2520160%2520120H352C385%2520120%2520412%2520147%2520412%2520180V380C412%2520413%2520385%2520440%2520352%2520440H160C127%2520440%2520100%2520413%2520100%2520380V180Z%27%2520fill%3D%27white%27%2F%253E%253Cpath%2520d%3D%27M180%2520120V80C180%252047%2520207%252020%2520240%252020H272C305%252020%2520332%252047%2520332%252080V120%27%2520stroke%3D%27%252327ae60%27%2520stroke-width%3D%2724%27%2520stroke-linecap%3D%27round%27%2F%253E%253Ccircle%2520cx%3D%27400%27%2520cy%3D%27200%27%2520r%3D%2750%27%2520fill%3D%27%25232ecc71%27%2F%253E%253Cpath%2520d%3D%27M190%2520280C190%2520280%2520220%2520330%2520256%2520330C292%2520330%2520322%2520280%2520322%2520280%27%2520stroke%3D%27%252327ae60%27%2520stroke-width%3D%2716%27%2520stroke-linecap%3D%27round%27%2F%253E%253Cellipse%2520cx%3D%27200%27%2520cy%3D%27250%27%2520rx%3D%2720%27%2520ry%3D%2725%27%2520fill%3D%27%252327ae60%27%2F%253E%253Cellipse%2520cx%3D%27312%27%2520cy%3D%27250%27%2520rx%3D%2720%27%2520ry%3D%2725%27%2520fill%3D%27%252327ae60%27%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+</body>
+</html>
+```
